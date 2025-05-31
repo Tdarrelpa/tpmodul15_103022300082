@@ -5,10 +5,10 @@ namespace tpmodul15_103022300082
 {
     public class Rootobject
     {
-        [JsonPropertyName("Nama")]
+        [JsonPropertyName("nama")]
         public string? Nama { get; set; }
         
-        [JsonPropertyName("Umur")]
+        [JsonPropertyName("umur")]
         public int Umur { get; set; }
     }
 
@@ -22,33 +22,41 @@ namespace tpmodul15_103022300082
             objekJSON = new Rootobject();
         }
 
-        public void GetUserInput()
+        // Dipisah menjadi 2 method untuk memisahkan input nama dan umur
+        public void GetUserNameInput(string? nameInput)
         {
-            do
+            try
             {
-                try
-                {
-                    Console.Write("Enter your name (A-Z, a-z): ");
-                    string? nameInput = Console.ReadLine();
-                    ValidateName(nameInput);
-                    if (nameInput == null) { throw new ArgumentNullException(nameof(nameInput), "Name input cannot be null."); }
-                    objekJSON.Nama = nameInput;
-
-                    Console.Write("Enter your age (5-120): ");
-                    string? ageInput = Console.ReadLine();
-                    ValidateAge(ageInput);
-                    if (ageInput == null) { throw new ArgumentNullException(nameof(ageInput), "Age input cannot be null."); }
-                    objekJSON.Umur = int.Parse(ageInput);
-                    break;
-                }
-                catch (ArgumentNullException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    return; // Exit the method if input is null
-                }
-            } while (true);
+                ValidateName(nameInput);
+                if (nameInput == null) { throw new ArgumentNullException(nameof(nameInput), "Name input cannot be null."); }
+                objekJSON.Nama = nameInput;
+            }
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return; // Exit the method if input is null
+            }
         }
 
+        public void GetUserAgeInput(string? ageInput)
+        {
+            try
+            {
+                ValidateAge(ageInput);
+                if (ageInput == null) { throw new ArgumentNullException(nameof(ageInput), "Age input cannot be null."); }
+                objekJSON.Umur = int.Parse(ageInput);
+            }
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return; // Exit the method if input is null
+            }
+        }
+
+        /* 
+         * Dibuat private untuk menghindari akses langsung dari luar kelas, 
+         * dan static untuk menghindari pembuatan instance setiap kali validasi diperlukan
+         */
         private static void ValidateName(string? name)
         {
             try
@@ -101,12 +109,18 @@ namespace tpmodul15_103022300082
             }
         }
 
-        // Serialize options for JSON output
+        /* 
+         * Menurut standar C#, ini wajib dideklarasikan secara terpisah untuk menghindari pembuatan instance per eksekusi kode (static),
+         * diakses dari luar kelas UjiInputJSON (private),
+         * dan modifikasi hanya dilakukan sekali saat kelas diinisialisasi (readonly).
+         * karena JsonSerializerOptions tidak perlu diubah selama runtime.
+         */
         private static readonly JsonSerializerOptions options = new()
         {
             WriteIndented = true
         };
 
+        // Memuat konfigurasi file JSON
         public void LoadConfig()
         {
             if (!File.Exists(FilePath))
@@ -124,10 +138,11 @@ namespace tpmodul15_103022300082
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Terjadi kesalahan: {ex.Message}");
+                Console.WriteLine($"Terjadi kesalahan saat memuat data: {ex.Message}");
             }
         }
 
+        // Menyimpan konfigurasi ke file JSON
         public void SaveConfig()
         {
             try
@@ -142,7 +157,8 @@ namespace tpmodul15_103022300082
             }
         }
 
-        private string? Dapat_Nama() { return objekJSON.Nama; }
-        private int Dapat_Umur() { return objekJSON.Umur; }
+        // Kedua getter ini dipanggil dalam program main, jadi harus dibuat public
+        public string? Dapat_Nama() { return objekJSON.Nama; }
+        public int Dapat_Umur() { return objekJSON.Umur; }
     }
 }
