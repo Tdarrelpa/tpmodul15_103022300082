@@ -16,6 +16,8 @@ namespace tpmodul15_103022300082
     {
         private readonly Rootobject objekJSON;
         private static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "TesInput.json");
+        private static bool isNameValid = false;
+        private static bool isAgeValid = false;
 
         public UjiInputJSON()
         {
@@ -43,14 +45,26 @@ namespace tpmodul15_103022300082
             try
             {
                 ValidateAge(ageInput);
-                if (ageInput == null) { throw new ArgumentNullException(nameof(ageInput), "Age input cannot be null."); }
-                objekJSON.Umur = int.Parse(ageInput);
+                // input null sudah ditangani di StoIParse(), tidak perlu ada pengecekan null lagi
+                objekJSON.Umur = StoIParse(ageInput); //Pengganti 'int.Parse()' dan Convert.ToInt32(), karena harus menggunakan catch yang dicomment biar jalan
             }
             catch (ArgumentNullException ex)
             {
                 Console.WriteLine(ex.Message);
                 return; // Exit the method if input is null
             }
+            /*
+            catch (FormatException ex) // menangani kesalahan format
+            {
+                Console.WriteLine($"Invalid format for age: {ex.Message}");
+                return; // Exit the method if input is not a valid integer
+            }
+            catch (OverflowException ex) // menangani kesalahan overflow jika angka terlalu besar atau kecil
+            {
+                Console.WriteLine($"Buffer overflow for age: {ex.Message}");
+                return; // Exit the method if input is out of range
+            }
+            */
         }
 
         /* 
@@ -64,20 +78,21 @@ namespace tpmodul15_103022300082
                 // Mengecek input kosong
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    throw new ArgumentException("Name cannot be empty. Please enter a valid name.");
+                    throw new ArgumentException("Name cannot be empty, please enter a valid name!");
                 }
                 // Mengecek jika input hanya huruf (A-Z, a-z)
                 if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z]+$"))
                 {
-                    throw new ArgumentException("Invalid name. Please enter a valid name using only letters.");
+                    throw new ArgumentException("Invalid name, please enter a valid name using only letters!");
                 }
                 // Jika semua validasi lolos
-                Console.WriteLine("Input valid, lanjutkan proses.");
+                Console.WriteLine("Input valid, lanjutkan proses!");
+                isNameValid = true; // Set validasi nama berhasil
             }
             catch (ArgumentException ex)
             {
                 Console.WriteLine(ex.Message);
-                throw; // Mengembalikan kontrol ke pemanggil jika terjadi kesalahan
+                return; // Mengembalikan kontrol ke pemanggil jika terjadi kesalahan
             }
         }
 
@@ -88,25 +103,43 @@ namespace tpmodul15_103022300082
                 // Mengecek input kosong
                 if (string.IsNullOrWhiteSpace(age))
                 {
-                    throw new ArgumentException("Age cannot be empty. Please enter a valid age.");
+                    throw new ArgumentException("Age cannot be empty, please enter a valid age!");
                 }
                 // Mengecek input hanya angka
                 if (!System.Text.RegularExpressions.Regex.IsMatch(age, @"^\d+$"))
                 {
-                    throw new ArgumentException("Invalid age format. Please enter a numeric value.");
+                    throw new ArgumentException("Invalid age format, please enter a numeric value!");
                 }
                 // Mengecek rentang umur valid (5-120 tahun)
                 if (!int.TryParse(age, out int ageValue) || ageValue < 5 || ageValue > 120)
                 {
-                    throw new ArgumentException("Invalid age. Please enter an age between 5 and 120.");
+                    throw new ArgumentException("Invalid age, please enter an age between 5 and 120!");
                 }
                 Console.WriteLine("Input valid, lanjutkan proses.");
+                isAgeValid = true; // Set validasi nama berhasil
             }
             catch (ArgumentException ex)
             {
                 Console.WriteLine(ex.Message);
                 return; // Mengembalikan kontrol ke pemanggil jika terjadi kesalahan
             }
+        }
+
+        // Membuat fungsi untuk mengkonversi string ke integer dengan penanganan kesalahan
+        private static int StoIParse(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                throw new ArgumentNullException(nameof(input), "Input cannot be null or empty.");
+            }
+            
+            if (!int.TryParse(input, out int result))
+            {
+                // throw new FormatException("Input is not a valid integer.");
+                return 0; // Cukup kembalikan 0, implementasi sebenarnya ada di ValidateAge()
+            }
+            
+            return result;
         }
 
         /* 
@@ -157,8 +190,11 @@ namespace tpmodul15_103022300082
             }
         }
 
-        // Kedua getter ini dipanggil dalam program main, jadi harus dibuat public
+        // Keempat getter ini dipanggil dalam program main, jadi harus dibuat public
         public string? Dapat_Nama() { return objekJSON.Nama; }
         public int Dapat_Umur() { return objekJSON.Umur; }
+
+        public bool IsNameValid() { return isNameValid; }
+        public bool IsAgeValid(){return isAgeValid;}
     }
 }

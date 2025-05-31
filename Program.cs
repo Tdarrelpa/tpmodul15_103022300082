@@ -8,14 +8,19 @@ public class Program
         UjiInputJSON ujiInput = new();
         ujiInput.LoadConfig();
 
-        Console.Write("Enter your name (A-Z, a-z): ");
-        string? nameInput = Console.ReadLine();
-        ujiInput.GetUserNameInput(nameInput);
+        do
+        {
+            Console.Write("Enter your name (A-Z, a-z): ");
+            string? nameInput = Console.ReadLine();
+            ujiInput.GetUserNameInput(nameInput);
+        } while (!ujiInput.IsNameValid()); // Setara dengan ujiInput.IsNameValid() == false
 
-
-        Console.Write("Enter your age (5-120): ");
-        string? ageInput = Console.ReadLine();
-        ujiInput.GetUserAgeInput(ageInput);
+        do 
+        {
+            Console.Write("Enter your age (5-120): ");
+            string? ageInput = Console.ReadLine();
+            ujiInput.GetUserAgeInput(ageInput);
+        } while (!ujiInput.IsAgeValid()); // Setara dengan ujiInput.IsAgeValid() == false
 
         Console.Write($"Nama: {ujiInput.Dapat_Nama()} \nUmur: {ujiInput.Dapat_Umur()} \n");
         Console.WriteLine("Data has been saved to TesInput.json");
